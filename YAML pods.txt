@@ -1,0 +1,62 @@
+nano server.js
+const http = require("http");
+const port = 3000;
+
+const server = http.createServer((req, res) => {
+  res.end("Hello from Node.js running inside Kubernetes!");
+});
+
+server.listen(port, () => {
+  console.log(`Server running at port ${port}`);
+});
+
+
+nano nodejs-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nodejs-app-config
+data:
+  server.js: |
+    const http = require("http");
+    const port = 3000;
+    const server = http.createServer((req, res) => {
+      res.end("Hello from Node.js running inside Kubernetes!");
+    });
+    server.listen(port, () => {
+      console.log(`Server running at port ${port}`);
+    });
+
+
+nano nodejs-pod.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nodejs-pod
+  labels:
+    app: nodejs
+spec:
+  containers:
+  - name: nodejs
+    image: node:18
+    command: ["node", "/usr/src/app/server.js"]
+    volumeMounts:
+    - name: app-code
+      mountPath: /usr/src/app
+    ports:
+    - containerPort: 3000
+  volumes:
+  - name: app-code
+    configMap:
+      name: nodejs-app-config
+
+
+kubectl apply -f nodejs-configmap.yaml
+kubectl apply -f nodejs-pod.yaml
+kubectl get pods
+kubectl port-forward pod/nodejs-pod 3000:3000
+
+
+kubectl delete pod --all
+kubectl delete svc --all
+kubectl delete deployments --all

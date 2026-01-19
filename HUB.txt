@@ -1,0 +1,27 @@
+
+
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app.py .
+
+EXPOSE 5000
+
+CMD ["python", "app.py"]
+
+requirements.txt Flask
+
+docker build -t program-6 .
+docker tag program-6 <dockerhub-username>/program-6:latest
+docker login -u <dockerhub-username>
+docker push <dockerhub-username>/program-6:latest
+
+
+docker tag program-6 ghcr.io/<github-username>/program-6:latest
+echo "YOUR_PAT_HERE" | docker login ghcr.io -u <github-username> --password-stdin
+docker push ghcr.io/<github-username>/program-6:latest
